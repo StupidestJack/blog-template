@@ -19,6 +19,7 @@ def get_header():
 def get_footer():
     return f"""
 <footer>
-    <p>&copy; {conf.year} {conf.author} | 文章基於 {conf.posts_license} 授權 | <a href="/rss.xml">RSS</a></p> | Powered by Niugnep's Blog Template
+    <p>&copy; {conf.year} {conf.author} | 文章基於 {conf.posts_license} 授權 | <a href="/rss.xml">RSS</a></p>
+    <p>Powered by Niugnep's Blog Template</p>
 </footer>
 """
