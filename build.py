@@ -5,9 +5,10 @@ import buildpy.metadata as meta
 import buildpy.xmlbuild as xmlb
 import buildpy.config as conf
 from pathlib import Path
+from datetime import datetime
 import json
 
-def build_about():
+def build_about(pages):
     content = ''
     about_path = Path("posts-md/about.md")
     if not about_path.exists():
@@ -27,7 +28,7 @@ def build_about():
         {meta.pub_date.format('2026-05-24')}
         ''',
         f'''
-        {ht.get_header()}
+        {ht.get_header(pages)}
         <div id="blog">
             <div id="content">
                 {md.markdown_to_html(content)}
@@ -39,7 +40,7 @@ def build_about():
     return html
 
 
-def build(post):
+def build(post, pages):
     content = ''
     with open(f"posts-md/{post['slug']}.md", 'r', encoding="utf-8") as f:
         content = f.read()
@@ -57,7 +58,7 @@ def build(post):
         {meta.pub_date.format(post["time"])}
         ''',
         f'''
-        {ht.get_header()}
+        {ht.get_header(pages)}
         <div id="blog">
             <div id="title-chunk">
                 <h1 id="title" class="title">{post["title"]}</h1>
@@ -112,7 +113,7 @@ def get_articles(posts, all_posts):
         articles += article
     return articles
 
-def build_home(posts):
+def build_home(posts, pages):
     desc_html = "<br>".join(conf.site_desc)
     
     html = htmlmk.html_template.format(
@@ -127,7 +128,7 @@ def build_home(posts):
         <link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml">
         ''',
         f'''
-        {ht.get_header()}
+        {ht.get_header(pages)}
         <section class="hero">
             <h1>{conf.site_title}</h1>
             <p>{desc_html}</p>
@@ -144,7 +145,7 @@ def build_home(posts):
     )
     return html
 
-def build_all(posts):
+def build_all(posts, pages):
     html = htmlmk.html_template.format(
         f"所有文章 | {conf.site_title}",
         f'''
@@ -155,7 +156,7 @@ def build_all(posts):
         {meta.pub_date.format("2026-05-12")}
         ''',
         f'''
-        {ht.get_header()}
+        {ht.get_header(pages)}
         <section class="hero">
             <h1>所有文章</h1>
         </section>
@@ -170,6 +171,53 @@ def build_all(posts):
     )
     return html
 
+def buildspec(pages):
+    """實作自訂獨立頁面的建置，並動態套用導覽列"""
+    for page in pages:
+        slug = page["slug"]
+        title = page["title"]
+        desc = page.get("desc") or page.get("description") or ""
+        
+        # 處理動態時間 TODAY
+        time_str = page.get("time", "2026-01-01")
+        if time_str.upper() == "TODAY":
+            time_str = datetime.now().strftime("%Y-%m-%d")
+
+        content = ''
+        page_path = Path(f"posts-md/spec/{slug}.md")
+        if not page_path.exists():
+            content = f"# {title}\n這裡目前沒有內容，請建立 `posts-md/spec//{slug}.md`！"
+        else:
+            with open(page_path, 'r', encoding="utf-8") as f:
+                content = f.read()
+
+        html = htmlmk.html_template.format(
+            f'{title} | {conf.site_title}',
+            f'''
+            {meta.desc.format(desc)} 
+            {meta.og_title.format(f'{title} | {conf.site_title}')}
+            {meta.og_desc.format(desc)}
+            {meta.author}
+            <link rel="canonical" href="{conf.url}/{slug}.html">
+            {meta.pub_date.format(time_str)}
+            ''',
+            f'''
+            {ht.get_header(pages)}
+            <div id="blog">
+                <div id="content">
+                    {md.markdown_to_html(content)}
+                </div>
+            </div>
+            {ht.get_footer()}
+            '''
+        )
+
+        # 獨立頁面直接產生在 docs/spec 目錄下（例如 docs/spec/blogroll.html）
+        with open(f'docs/spec/{slug}.html', 'w', encoding="utf-8") as f:
+            f.write(html)
+        print(f"  └─ 自訂頁面 {slug}.html 建置成功！ >v<")
+
+
 def run_build():
     """執行完整建置的進入點"""
     Path("docs/posts").mkdir(parents=True, exist_ok=True)
@@ -183,10 +231,17 @@ def run_build():
 
     posts = sorted(posts, key=lambda x: x["time"], reverse=True)
 
+    if not Path("pages.json").exists():
+        print("❌ 錯誤：找不到 pages.json，無法讀取頁面列表！")
+        return
+
+    with open("pages.json", "r", encoding="utf-8") as f:
+        pages = json.load(f)
+
     # 1. 關於我
     try:
         with open('docs/about.html', 'w', encoding="utf-8") as f:
-            f.write(build_about())
+            f.write(build_about(pages))
     except Exception as e:
         print(f"建置 about 失敗... >皿< ({e})")
     else:
@@ -196,7 +251,7 @@ def run_build():
     for post in posts:
         try:
             with open(f'docs/posts/{post["slug"]}.html', 'w', encoding="utf-8") as f:
-                f.write(build(post))
+                f.write(build(post, pages))
         except Exception as e:
             print(f"建置 {post['slug']} 失敗... >皿< ({e})")
         else:
@@ -205,7 +260,7 @@ def run_build():
     # 3. 首頁
     try:
         with open("docs/index.html", "w", encoding="utf-8") as f:
-            f.write(build_home(posts))
+            f.write(build_home(posts, pages))
     except Exception as e:
         print(f"建置 index 失敗... >皿< ({e})")
     else:
@@ -214,7 +269,7 @@ def run_build():
     # 4. 所有文章
     try:
         with open("docs/all.html", "w", encoding="utf-8") as f:
-            f.write(build_all(posts))
+            f.write(build_all(posts, pages))
     except Exception as e:
         print(f"建置 all 失敗... >皿< ({e})")
     else:
@@ -238,15 +293,15 @@ def run_build():
     else:
         print("建置 rss 成功！ >v<")
 
+    # 7. 自訂獨立頁面
+    try:
+        print("開始建置自訂獨立頁面...")
+        buildspec(pages)
+    except Exception as e:
+        print(f"建置 spec 失敗... >皿< ({e})")
+    else:
+        print("建置 spec 成功！ >v<")
+
 if __name__ == "__main__":
     run_build()
 
-"""
-{
-    "slug":"install-mint",
-    "title":"《成為Linux使用者並在一年內挑戰Arch Linux》02 - 連我媽都能看懂的Linux Mint安裝教學",
-    "time":"2026-06-02",
-    "description": "Linux Mint的完整安裝教學，但是老嫗能解（未完工）",
-    "tags":["Linux","教學","新手"]
-}
-"""
