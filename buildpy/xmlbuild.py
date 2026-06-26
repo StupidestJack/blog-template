@@ -47,11 +47,15 @@ def buildsm(posts):
 
     sitemap += f'''
     <url>
-        <loc>{conf.url}/</loc>
+        <loc>{conf.url}/recommend.html</loc>
         <lastmod>{today}</lastmod>
     </url>
     <url>
         <loc>{conf.url}/all.html</loc>
+        <lastmod>{today}</lastmod>
+    </url>
+    <url>
+        <loc>{conf.url}/</loc>
         <lastmod>{today}</lastmod>
     </url>
 </urlset>'''

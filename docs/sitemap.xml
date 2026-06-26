@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://someone.github.io/posts/install-mint.html</loc>
-        <lastmod>2026-06-02</lastmod>
+        <loc>https://stupidestjack.github.io/recommend.html</loc>
+        <lastmod>2026-06-26</lastmod>
     </url>
     <url>
-        <loc>https://someone.github.io/</loc>
-        <lastmod>2026-06-08</lastmod>
+        <loc>https://stupidestjack.github.io/all.html</loc>
+        <lastmod>2026-06-26</lastmod>
     </url>
     <url>
-        <loc>https://someone.github.io/all.html</loc>
-        <lastmod>2026-06-08</lastmod>
+        <loc>https://stupidestjack.github.io/</loc>
+        <lastmod>2026-06-26</lastmod>
     </url>
 </urlset>

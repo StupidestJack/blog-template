@@ -6,9 +6,10 @@ def get_header(pages=None):
     """
     # 預設的基本固定連結
     links = [
-        '<a href="/index.html">首頁</a>',
-        '<a href="/about.html">關於我</a>',
-        '<a href="/all.html">所有文章</a>'
+        f'<a href="{conf.url}/index.html">首頁</a>',
+        f'<a href="{conf.url}/all.html">所有文章</a>',
+        f'<a href="{conf.url}/random.html">隨機</a>',
+        f'<a href="{conf.url}/timeline">時間軸</a>'
     ]
     
     # 如果有傳入自訂獨立頁面，且設定要在導覽列顯示，就動態加進去
@@ -18,7 +19,7 @@ def get_header(pages=None):
             if page.get("on_nvabar") or page.get("on_navbar"):
                 slug = page["slug"]
                 title = page["title"]
-                links.append(f'<a href="/{slug}.html">{title}</a>')
+                links.append(f'<a href="/spec/{slug}.html">{title}</a>')
                 
     # 將所有連結用換行與縮排組合起來
     links_html = "\n            ".join(links)

@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-    <title>某人的部落格</title>
-    <link>https://someone.github.io</link>
-    <description>第一行</description>
+    <title>Niugnep 的部落格</title>
+    <link>https://stupidestjack.github.io</link>
+    <description>一個國二生幹話的地方。</description>
     <language>zh-TW</language>
-    <atom:link href="https://someone.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    
-    <item>
-        <title>《成為Linux使用者並在一年內挑戰Arch Linux》02 - 連我媽都能看懂的Linux Mint安裝教學</title>
-        <link>https://someone.github.io/posts/install-mint.html</link>
-        <guid>https://someone.github.io/posts/install-mint.html</guid>
-        <description>Linux Mint的完整安裝教學，但是老嫗能解（未完工）</description>
-        <pubDate>Tue, 02 Jun 2026 00:00:00 -0000</pubDate>
-        <author>someone@email.com (某人)</author>
-    </item></channel></rss>
+    <atom:link href="https://stupidestjack.github.io/rss.xml" rel="self" type="application/rss+xml"/>
+    </channel></rss>

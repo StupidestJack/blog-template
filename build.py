@@ -8,36 +8,64 @@ from pathlib import Path
 from datetime import datetime
 import json
 
-def build_about(pages):
-    content = ''
-    about_path = Path("posts-md/about.md")
-    if not about_path.exists():
-        content = "# 關於我\n這裡目前沒有內容，請建立 `posts-md/about.md`！"
-    else:
-        with open(about_path, 'r', encoding="utf-8") as f:
-            content = f.read()
+now = datetime.now()
+
+def buildspec(pages):
+    """
+    自動化建置所有在 pages.json 定義的特殊獨立頁面
+    來源：posts-md/spec/{slug}.md  ->  輸出：docs/{slug}.html
+    """
+    for page in pages:
+        slug = page["slug"]
+        title = page["title"]
+        desc = page.get("desc") or page.get("description") or ""
         
-    html = htmlmk.html_template.format(
-        f'關於我 | {conf.site_title}',
-        f'''
-        {meta.desc.format(f'關於 {conf.author} 和 {conf.site_title}')} 
-        {meta.og_title.format(f'關於我 | {conf.site_title}')}
-        {meta.og_desc.format(f'關於 {conf.author} 和 {conf.site_title}')}
-        {meta.author}
-        <link rel="canonical" href="{conf.url}/about.html">
-        {meta.pub_date.format('2026-05-24')}
-        ''',
-        f'''
-        {ht.get_header(pages)}
-        <div id="blog">
-            <div id="content">
-                {md.markdown_to_html(content)}
+        # 處理動態時間 TODAY
+        time_str = page.get("time", "2026-01-01")
+        if time_str.upper() == "TODAY":
+            time_str = now.strftime("%Y-%m-%d")
+
+        # 讀取 Markdown 內容
+        page_path = Path(f"posts-md/spec/{slug}.md")
+        if not page_path.exists():
+            content = f"# {title}\n這裡目前沒有內容，請建立 `posts-md/spec/{slug}.md`！"
+        else:
+            with open(page_path, 'r', encoding="utf-8") as f:
+                file_content = f.read()
+            
+            # 聰明防呆：如果 Markdown 內容開頭沒有大標題 (#)，自動幫忙補上，省去手寫麻煩
+            if not file_content.strip().startswith("#"):
+                content = f"# {title}\n\n{file_content}"
+            else:
+                content = file_content
+
+        # 轉譯 HTML
+        html = htmlmk.html_template.format(
+            f'{title} | {conf.site_title}',
+            f'''
+            {meta.desc.format(desc)} 
+            {meta.og_title.format(f'{title} | {conf.site_title}')}
+            {meta.og_desc.format(desc)}
+            {meta.author}
+            <link rel="canonical" href="{conf.url}/{slug}.html">
+            {meta.pub_date.format(time_str)}
+            ''',
+            f'''
+            {ht.get_header(pages)}
+            <div id="blog">
+                <div id="content">
+                    {md.markdown_to_html(content)}
+                    <br>
+                </div>
             </div>
-        </div>
-        {ht.get_footer()}
-        '''
-    )
-    return html
+            {ht.get_footer()}
+            '''
+        )
+        
+        # 寫入目標檔案
+        with open(f'docs/spec/{slug}.html', 'w', encoding="utf-8") as f:
+            f.write(html)
+        print(f"  └─ 特殊頁面 {slug}.html 建置成功！ >v<")
 
 
 def build(post, pages):
@@ -123,7 +151,7 @@ def build_home(posts, pages):
         {meta.og_title.format(conf.site_title)}
         {meta.og_desc.format(f"{conf.site_title}的首頁")}
         {meta.author}
-        {meta.pub_date.format("2026-05-12")}
+        {meta.pub_date.format(now.strftime("%Y-%m-%d"))}
         <meta name="google-site-verification" content="-BsyQE4UmvmmmNQqDf_hvjxk3V9AFHN1nPSElMM7Vs0" />
         <link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml">
         ''',
@@ -153,7 +181,7 @@ def build_all(posts, pages):
         {meta.og_title.format(conf.site_title)}
         {meta.og_desc.format(f"{conf.site_title}的所有文章畫面")}
         {meta.author}
-        {meta.pub_date.format("2026-05-12")}
+        {meta.pub_date.format(now.strftime("%Y-%m-%d"))}
         ''',
         f'''
         {ht.get_header(pages)}
@@ -171,52 +199,75 @@ def build_all(posts, pages):
     )
     return html
 
-def buildspec(pages):
-    """實作自訂獨立頁面的建置，並動態套用導覽列"""
-    for page in pages:
-        slug = page["slug"]
-        title = page["title"]
-        desc = page.get("desc") or page.get("description") or ""
-        
-        # 處理動態時間 TODAY
-        time_str = page.get("time", "2026-01-01")
-        if time_str.upper() == "TODAY":
-            time_str = datetime.now().strftime("%Y-%m-%d")
-
-        content = ''
-        page_path = Path(f"posts-md/spec/{slug}.md")
-        if not page_path.exists():
-            content = f"# {title}\n這裡目前沒有內容，請建立 `posts-md/spec//{slug}.md`！"
-        else:
-            with open(page_path, 'r', encoding="utf-8") as f:
-                content = f.read()
-
-        html = htmlmk.html_template.format(
-            f'{title} | {conf.site_title}',
-            f'''
-            {meta.desc.format(desc)} 
-            {meta.og_title.format(f'{title} | {conf.site_title}')}
-            {meta.og_desc.format(desc)}
-            {meta.author}
-            <link rel="canonical" href="{conf.url}/{slug}.html">
-            {meta.pub_date.format(time_str)}
-            ''',
-            f'''
-            {ht.get_header(pages)}
+def build_404(pages):
+    html = htmlmk.html_template.format(
+        f"找不到此頁面 | {conf.site_title}",
+        f'''
+        ''',
+        f'''
+        {ht.get_header(pages)}
+        <section class="hero">
+            <h1>迷路的旅行者，您在找什麼呢？</h1>
+        </section>
+        <div id="err404" style="text-align: center;">
+            <h2>Error 404，網頁不見了。</h2>
+            <p>此處乃虛無之地，無任何可留戀之處。</p>
+            <p>此地附近有數個傳送之門，或許您需要這個。</p>
             <div id="blog">
-                <div id="content">
-                    {md.markdown_to_html(content)}
-                </div>
+                <h2>傳送之門</h2>
+                <a href="/index.html">首頁</a>
+                <a href="/about.html">關於我</a>
+                <a href="/all.html">所有文章</a>
+                <a href="/timeline">時間軸</a><br>
+                <a href="https://github.com/StupidestJack/stupidestjack.github.io/issues">質問此世之神(GitHub Issues)</a>
+                <br><br>
             </div>
-            {ht.get_footer()}
-            '''
-        )
+        </div>
+        {ht.get_footer()}
+        '''
+    )
+    return html
 
-        # 獨立頁面直接產生在 docs/spec 目錄下（例如 docs/spec/blogroll.html）
-        with open(f'docs/spec/{slug}.html', 'w', encoding="utf-8") as f:
-            f.write(html)
-        print(f"  └─ 自訂頁面 {slug}.html 建置成功！ >v<")
-
+def build_random(posts, pages):
+    slugs = [post["slug"] for post in posts]
+    slugs_json = json.dumps(slugs)
+    
+    html = htmlmk.html_template.format(
+        f'隨機文章 | {conf.site_title}',
+        f'''
+        {meta.desc.format(f'隨機挑選一篇 {conf.author} 的文章閱讀')} 
+        {meta.og_title.format(f'隨機文章 | {conf.site_title}')}
+        {meta.og_desc.format(f'隨機挑選一篇 {conf.author} 的文章閱讀')}
+        {meta.author}
+        <link rel="canonical" href="{conf.url}/random.html">
+        {meta.pub_date.format(now.strftime("%Y-%m-%d"))}
+        ''',
+        f'''
+        {ht.get_header(pages)}
+        <div id="blog" style="text-align: center; padding: 100px 20px;">
+            <div id="content">
+                <h2 style="font-size: 1.8rem; margin-bottom: 15px;">正在挑選隨機文章...</h2>
+                <p style="color: #666; font-size: 1rem;">
+                    如果瀏覽器沒有自動跳轉，請點擊 <a id="redirect-link" href="/index.html" style="color: #007acc; text-decoration: underline;">這裡</a>回到首頁。
+                </p>
+            </div>
+        </div>
+        
+        <script>
+            const posts = {slugs_json};
+            if (posts && posts.length > 0) {{
+                const randomSlug = posts[Math.floor(Math.random() * posts.length)];
+                const targetUrl = "/posts/" + randomSlug + ".html";
+                document.getElementById("redirect-link").href = targetUrl;
+                window.location.replace(targetUrl);
+            }} else {{
+                window.location.replace("/index.html");
+            }}
+        </script>
+        {ht.get_footer()}
+        '''
+    )
+    return html
 
 def run_build():
     """執行完整建置的進入點"""
@@ -226,26 +277,26 @@ def run_build():
         print("❌ 錯誤：找不到 posts.json，無法讀取文章列表！")
         return
 
+    if not Path("pages.json").exists():
+        print("❌ 錯誤：找不到 pages.json，無法讀取獨立頁面列表！")
+        return
+
     with open("posts.json", "r", encoding="utf-8") as f:
         posts = json.load(f)
-
-    posts = sorted(posts, key=lambda x: x["time"], reverse=True)
-
-    if not Path("pages.json").exists():
-        print("❌ 錯誤：找不到 pages.json，無法讀取頁面列表！")
-        return
 
     with open("pages.json", "r", encoding="utf-8") as f:
         pages = json.load(f)
 
-    # 1. 關於我
+    posts = sorted(posts, key=lambda x: x["time"], reverse=True)
+
+    # 1. 執行 spec 特殊頁面動態生成
     try:
-        with open('docs/about.html', 'w', encoding="utf-8") as f:
-            f.write(build_about(pages))
+        print("開始建置特殊獨立頁面...")
+        buildspec(pages)
     except Exception as e:
-        print(f"建置 about 失敗... >皿< ({e})")
+        print(f"建置 spec 失敗... >皿< ({e})")
     else:
-        print("建置 about 成功！ >v<")
+        print("所有 spec 特殊頁面建置完成！ >v<")
 
     # 2. 各篇文章
     for post in posts:
@@ -293,15 +344,23 @@ def run_build():
     else:
         print("建置 rss 成功！ >v<")
 
-    # 7. 自訂獨立頁面
+    # 7. 404 頁面
     try:
-        print("開始建置自訂獨立頁面...")
-        buildspec(pages)
+        with open("docs/404.html", "w", encoding="utf-8") as f:
+            f.write(build_404(pages))
     except Exception as e:
-        print(f"建置 spec 失敗... >皿< ({e})")
+        print(f"建置 404 失敗... >皿< ({e})")
     else:
-        print("建置 spec 成功！ >v<")
+        print("建置 404 成功！ >v<")
+
+    # 8. 隨機文章頁面
+    try:
+        with open("docs/random.html", "w", encoding="utf-8") as f:
+            f.write(build_random(posts, pages))
+    except Exception as e:
+        print(f"建置 random 失敗... >皿< ({e})")
+    else:
+        print("建置 random 成功！ >v<")
 
 if __name__ == "__main__":
     run_build()
-
