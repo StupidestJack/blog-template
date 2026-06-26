@@ -1,0 +1,225 @@
+:root {
+
+    --bg-color: #000000;         
+    --card-bg: #111111;          
+    --text-primary: #ffffff;     
+    --text-secondary: #aaaaaa;  
+    --accent-color: ___;     
+    --nav-hover: ___;      
+    --border-color: ___;    
+    --text-white: #ffffff;     
+    --spoiler-bg: #000000;       
+    --spoiler-hover-bg: #000000; 
+}
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* 頁首樣式 */
+header {
+    background-color: var(--card-bg);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color); /* 已改成變數 */
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    letter-spacing: 1px;
+}
+
+nav a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: var(--accent-color);
+}
+
+/* 主內容區樣式 */
+#blog, #comment, #posts-list, #timeline {
+max-width: 800px;
+margin: 40px auto;
+padding: 0 20px;
+}
+
+#blog, #comment {
+border: var(--border-color) solid 1px; /* 已改成變數 */
+border-radius: 30px;
+}
+
+#title {
+font-size: 2.5rem;
+margin-bottom: 0.5rem;
+}
+
+/* 頁尾樣式 */
+footer {
+    text-align: center;
+    padding: 2rem;
+    margin-top: 50px;
+    background-color: var(--card-bg);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+/* 讓 Markdown 裡的圖片不要爆出去 */
+img {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+#home {
+max-width: 900px;
+margin: 40px auto;
+padding: 20px;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+article {
+    background-color: var(--card-bg);
+    border: 1px solid var(--nav-hover);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+.post-card:hover {
+    transform: translateY(-3px);
+}
+
+.post-time {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.post-description {
+    margin-top: 10px;
+}
+
+.tags {
+    margin-top: 10px;
+}
+
+.tag {
+    display: inline-block;
+    background-color: var(--bg-color);
+    color: var(--accent-color);
+    padding: 4px 10px;
+    margin-right: 8px;
+    margin-top: 5px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+}
+
+.des {
+    color: var(--text-white); /* 已改成變數 */
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+#menu-toggle {
+display: none;
+}
+
+.hamburger {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1rem;
+}
+
+/* 手機版 */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block;
+        color: var(--text-white); /* 已改成變數 */
+    }
+
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 40px;
+        right: 0;
+        width: 160px;
+        background: var(--bg-color);
+        border: 1px solid var(--nav-hover);
+        border-radius: 12px;
+        padding: 10px;
+        z-index: 999;
+        flex-direction: column;
+    }
+
+    .nav-links a {
+        display: block;
+        padding: 10px;
+        white-space: nowrap;
+    }
+
+    #menu-toggle:checked ~ .nav-links {
+    display: flex;
+    }
+}
+
+/* 🌌 藍紫色調優化版黑幕樣式 */
+.spoiler {
+    background-color: var(--spoiler-bg); /* 已改成變數 */
+    color: var(--spoiler-bg);            /* 已改成變數 */
+    border-radius: 4px;
+    padding: 0 4px;
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+/* 滑鼠懸停時看清文字 */
+.spoiler:hover {
+    color: var(--accent-color);
+    background-color: var(--spoiler-hover-bg); /* 已改成變數 */
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+td, th {
+    border-collapse: collapse;
+    border-left: var(--border-color) solid 1px;
+    border-top: var(--border-color) solid 1px;
+    padding: 10px;
+}
+
+table {
+    border-collapse: collapse;
+    border-right: var(--border-color) solid 1px;
+    border-bottom: var(--border-color) solid 1px;
+}
